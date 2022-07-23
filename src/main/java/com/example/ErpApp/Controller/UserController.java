@@ -14,12 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -30,19 +27,19 @@ import java.util.Optional;
 @CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
+    public UserModel loginUser;
+    public FacultyDetails facultyDetails;
+    Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserService userService;
     @Autowired
     private AuthenticationManager authenticationManager;
-
     @Autowired
     private MyUserDetailsService userDetailsService;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
     @Autowired
     private UserRepository userRepository;
-    public UserModel loginUser;
-    public FacultyDetails facultyDetails;
     private StudentDetails studentDetails;
     @Autowired
     private FacultyService facultyService;
@@ -50,10 +47,8 @@ public class UserController {
     private FacultyRepository facultyRepository;
     @Autowired
     private StudentRepository studentRepository;
-
     @Autowired
     private StudentService studentService;
-    Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/Register")
     public String addUser(@RequestBody @Valid UserModel user) throws UsernameNotFoundException {

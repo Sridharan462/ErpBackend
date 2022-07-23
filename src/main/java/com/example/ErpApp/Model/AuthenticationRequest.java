@@ -3,7 +3,8 @@ package com.example.ErpApp.Model;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class AuthenticationRequest {
     private String email;
     private String password;

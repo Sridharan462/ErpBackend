@@ -1,10 +1,13 @@
 package com.example.ErpApp.Model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
-@Getter @Setter
+@Getter
+@Setter
 @Entity
 @Table(name = "Subject")
 @NoArgsConstructor
@@ -21,11 +24,11 @@ public class Subjects {
     private boolean markAdded;
 
     public Subjects(Subjects subjects) {
-        this.id=subjects.getId();
-        this.sem=subjects.getSem();
-        this.subjectName=subjects.getSubjectName();
-        this.subjectCode=subjects.getSubjectCode();
-        this.count=subjects.getCount();
+        this.id = subjects.getId();
+        this.sem = subjects.getSem();
+        this.subjectName = subjects.getSubjectName();
+        this.subjectCode = subjects.getSubjectCode();
+        this.count = subjects.getCount();
     }
 
     @Override

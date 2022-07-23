@@ -1,6 +1,5 @@
 package com.example.ErpApp.Controller;
 
-import com.example.ErpApp.Model.FacultyDetails;
 import com.example.ErpApp.Model.StudentDetails;
 import com.example.ErpApp.Repository.StudentRepository;
 import com.example.ErpApp.Service.StudentService;
@@ -16,39 +15,41 @@ import java.util.Optional;
 @RestController
 @CrossOrigin(origins = "*")
 public class StudentController {
+    Logger logger = LoggerFactory.getLogger(StudentDetails.class);
     @Autowired
     private StudentService studentService;
     @Autowired
     private StudentRepository studentRepository;
-    Logger logger = LoggerFactory.getLogger(StudentDetails.class);
+
     @PostMapping("/addStudent")
-    public String addStudent(@RequestBody StudentDetails studentDetails)
-    {
+    public String addStudent(@RequestBody StudentDetails studentDetails) {
         studentRepository.save(studentDetails);
         return "student saved";
     }
+
     @GetMapping("/getStudent/{id}")
-    public StudentDetails getStudent(@PathVariable Long id)
-    {
+    public StudentDetails getStudent(@PathVariable Long id) {
         return studentService.findByuserId(id);
     }
+
     @GetMapping("/getAllStudent")
-    public List<StudentDetails> getAllStudent()
-    {
+    public List<StudentDetails> getAllStudent() {
         return studentRepository.findAll();
     }
+
     @GetMapping("/particularStudent/{id}")
-    public Optional<StudentDetails> particularStudent(@PathVariable Long id)
-    {
+    public Optional<StudentDetails> particularStudent(@PathVariable Long id) {
         logger.info("User present");
         return studentRepository.findById(id);
     }
+
     @DeleteMapping("/deleteStudent/{id}")
     public String delete(@PathVariable Long id) {
         StudentDetails delete = studentService.findById(id);
         studentRepository.delete(delete);
         return "deleted";
     }
+
     @PutMapping("/editStudent/{id}")
     public ResponseEntity<StudentDetails> updateService(@PathVariable Long id, @RequestBody StudentDetails studentDetails) {
         StudentDetails studentDetails1 = studentService.findById(id);

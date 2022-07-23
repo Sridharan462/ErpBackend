@@ -15,8 +15,4 @@ public class MarksService {
         return marksRepository.findBySubject(subject);
     }
 
-    public void updateCountOfSubject(int count, Long id) {
-        System.out.println(count);
-        marksRepository.updateSubjectCount(count, id);
-    }
 }

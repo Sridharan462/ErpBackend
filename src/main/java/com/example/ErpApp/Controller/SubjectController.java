@@ -3,34 +3,28 @@ package com.example.ErpApp.Controller;
 import com.example.ErpApp.Model.MarksModel;
 import com.example.ErpApp.Model.Subjects;
 import com.example.ErpApp.Repository.MarksRepository;
-import com.example.ErpApp.Repository.StudentRepository;
 import com.example.ErpApp.Repository.SubjectRepository;
 import com.example.ErpApp.Service.MarksService;
 import com.example.ErpApp.Service.StudentService;
 import com.example.ErpApp.Service.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @RestController
 @CrossOrigin(origins = "*")
 public class SubjectController {
+    @Autowired
+    MarksRepository marksRepository;
+    @Autowired
+    MarksService marksService;
     @Autowired
     private SubjectRepository subjectRepository;
     @Autowired
     private SubjectService subjectService;
     @Autowired
     private StudentService studentService;
-    @Autowired
-    MarksRepository marksRepository;
-    @Autowired
-    MarksService marksService;
-
 
     @PostMapping("/addSubject")
     public String addSubject(@RequestBody Subjects subjects) {
@@ -46,7 +40,6 @@ public class SubjectController {
         if (marksFromDB != null) {
             marksFromDB.setCount(subjects.getCount() + marksFromDB.getCount());
             marksRepository.save(marksFromDB);
-//            marksService.updateCountOfSubject(finalCount, marksFromDB.getId());
         } else {
             marksModel.setSubject(subjects.getSubjectName());
             marksModel.setCount(subjects.getCount());
