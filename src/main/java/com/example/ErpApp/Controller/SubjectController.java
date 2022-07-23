@@ -1,7 +1,12 @@
 package com.example.ErpApp.Controller;
 
+import com.example.ErpApp.Model.MarksModel;
 import com.example.ErpApp.Model.Subjects;
+import com.example.ErpApp.Repository.MarksRepository;
+import com.example.ErpApp.Repository.StudentRepository;
 import com.example.ErpApp.Repository.SubjectRepository;
+import com.example.ErpApp.Service.MarksService;
+import com.example.ErpApp.Service.StudentService;
 import com.example.ErpApp.Service.SubjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,80 +24,76 @@ public class SubjectController {
     private SubjectRepository subjectRepository;
     @Autowired
     private SubjectService subjectService;
+    @Autowired
+    private StudentService studentService;
+    @Autowired
+    MarksRepository marksRepository;
+    @Autowired
+    MarksService marksService;
+
+
     @PostMapping("/addSubject")
-    public String addSubject(@RequestBody Subjects subjects)
-    {
+    public String addSubject(@RequestBody Subjects subjects) {
 
-        for(int i=1;i<=subjects.getCount();i++) {
-
-            Subjects s=new Subjects(subjects);
+        MarksModel marksModel = new MarksModel();
+        for (int i = 1; i <= subjects.getCount(); i++) {
+            Subjects s = new Subjects(subjects);
+            s.setMarkAdded(false);
             subjectRepository.save(s);
             System.out.println(subjects);
         }
+        MarksModel marksFromDB = marksRepository.findBySubject(subjects.getSubjectName());
+        if (marksFromDB != null) {
+            marksFromDB.setCount(subjects.getCount() + marksFromDB.getCount());
+            marksRepository.save(marksFromDB);
+//            marksService.updateCountOfSubject(finalCount, marksFromDB.getId());
+        } else {
+            marksModel.setSubject(subjects.getSubjectName());
+            marksModel.setCount(subjects.getCount());
+            marksRepository.save(marksModel);
+        }
         return "subject added";
     }
-    int Sid=0;
+
     @GetMapping("/getSubject/{id}")
-    public List<Subjects> getSubject(@PathVariable int id)
-    {
+    public List<Subjects> getSubject(@PathVariable int id) {
         return subjectRepository.findBySem(id);
     }
-    int n=0;
-    int m=1;
-    int temp=0;
-    int temp1=1;
+
     @PostMapping("/addMark")
-    public String addMark(@RequestBody Subjects subjects)
-    {
-        if(!subjectRepository.existsByRegister(subjects.getRegister()))
-        {
-            Sid++;
-            System.out.println(!subjectRepository.existsByRegister(subjects.getRegister()));
-            System.out.println(Sid + "of 1st if");
-        }
-        temp=Sid;
-        if( (temp1==1 && Sid==1) || (!subjectRepository.existsByRegister(subjects.getRegister()))) {
-
-            Subjects sub = subjectService.findById(Sid);
-            sub.setRegister(subjects.getRegister());
-            subjectRepository.save(sub);
-            n=0;
-            temp1++;
-            System.out.println(temp1 +"temp1");
-            subjectRepository.updateMark(subjects.getMark(), subjects.getSubjectname(), subjects.getRegister());
-            return "updated";
-        }
-        else
-        {
-            String reg=subjects.getRegister();
-            System.out.println(temp);
-            Subjects sub = subjectService.findById(temp+n);
-            m=temp+n;
-            System.out.println("n"+ n);
-            for(int i=2;i<=sub.getCount()+m;i++) {
-                n++;
-                Subjects sub1 = subjectService.findById(i);
-                int mark= sub1.getMark();
-                System.out.println(n + "n");
-                if(mark==0) {
-                    System.out.println(mark + "mark");
-                    sub1.setRegister(subjects.getRegister());
-                    subjectRepository.save(sub1);
-
-                    if (sub1.getRegister().equals(subjects.getRegister()) && sub1.getSubjectname().equals(subjects.getSubjectname())) {
-                        subjectRepository.updateMark(subjects.getMark(), subjects.getSubjectname(), subjects.getRegister());
-                        break;
-                    }
-                }
+    public String addMark(@RequestBody Subjects subjects) {
+        MarksModel model = marksService.findSubjectCountBySubjectName(subjects.getSubjectName());
+        if (!studentService.findRegIfExists(subjects.getRegister())) {
+            System.out.println("#error");
+            return "Add a valid register number";
+        } else if (!subjectService.findByRegister(subjects.getRegister()) && model.getCount() >= 0) {
+            Subjects marksFromRequest = new Subjects();
+            List<Subjects> marksFromRequestList = subjectService.findAllData(subjects.getSubjectName());
+            boolean flagForMarkAddedCheck = true;
+            for (Subjects subject : marksFromRequestList) {
+                if (!subject.isMarkAdded()) {
+                    marksFromRequest = subject;
+                    flagForMarkAddedCheck = true;
+                    break;
+                } else flagForMarkAddedCheck = false;
             }
-
+            if (!flagForMarkAddedCheck)
+                return "Un-applicable to add mark";
+            marksFromRequest.setCount(marksFromRequest.getCount() - 1);
+            marksFromRequest.setMarkAdded(true);
+            marksFromRequest.setRegister(subjects.getRegister());
+            marksFromRequest.setMark(subjects.getMark());
+            subjectRepository.save(marksFromRequest);
+            model.setCount(model.getCount() - 1);
+            marksRepository.save(model);
+            return marksFromRequest.toString();
+        } else {
+            return "Marks were added for all the students";
         }
-              return "";
     }
 
     @PostMapping("/getMark")
-    public List<Subjects> getMark(@RequestBody Subjects subjects)
-    {
-       return subjectRepository.getMark(subjects.getSem(),subjects.getRegister());
+    public List<Subjects> getMark(@RequestBody Subjects subjects) {
+        return subjectRepository.getMark(subjects.getSem(), subjects.getRegister());
     }
 }

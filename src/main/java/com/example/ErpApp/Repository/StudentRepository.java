@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface StudentRepository extends JpaRepository<StudentDetails,Long> {
     public StudentDetails findByEmail(String email);
     public StudentDetails findByuserId(Long id);
+    public StudentDetails findByReg(String reg);
 }

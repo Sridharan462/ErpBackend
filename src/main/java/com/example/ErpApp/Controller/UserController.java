@@ -33,7 +33,7 @@ public class UserController {
     @Autowired
     private UserService userService;
     @Autowired
-   private AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
 
     @Autowired
     private MyUserDetailsService userDetailsService;
@@ -51,67 +51,63 @@ public class UserController {
     @Autowired
     private StudentRepository studentRepository;
 
-@Autowired
-private StudentService studentService;
+    @Autowired
+    private StudentService studentService;
     Logger logger = LoggerFactory.getLogger(UserController.class);
-@PostMapping("/Register")
-public String addUser(@RequestBody @Valid UserModel user) throws UsernameNotFoundException {
-    if (userService.findByEmail(user.getEmail()) == null) {
-        userService.saveUser(user);
-        return "new user";
-    } else
-        throw new UsernameNotFoundException("User already found in database" + user);
-}
 
-@CrossOrigin(origins = "http://localhost:3000")
-@PostMapping("/login")
-public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception
-{
-    loginUser=userService.findByEmail(authenticationRequest.getEmail());
-    if(userService.findByEmail(authenticationRequest.getEmail())!=null) {
-        BCryptPasswordEncoder passwordEncoder=new BCryptPasswordEncoder();
-        boolean passwordexist=passwordEncoder.matches(authenticationRequest.getPassword(), loginUser.getPassword());
-        if(passwordexist==true) {
-            if (loginUser.getUsertype().equals("Staff")) {
-                facultyDetails = facultyService.findByEmail(loginUser.getEmail());
-                if (loginUser.getEmail().equals(facultyDetails.getEmail())) {
-                    facultyDetails.setUserId(loginUser.getId());
-                    facultyRepository.save(facultyDetails);
-                    logger.info("Staff id saved");
+    @PostMapping("/Register")
+    public String addUser(@RequestBody @Valid UserModel user) throws UsernameNotFoundException {
+        if (userService.findByEmail(user.getEmail()) == null) {
+            userService.saveUser(user);
+            return "new user";
+        } else
+            throw new UsernameNotFoundException("User already found in database" + user);
+    }
+
+    @CrossOrigin(origins = "http://localhost:3000")
+    @PostMapping("/login")
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+        loginUser = userService.findByEmail(authenticationRequest.getEmail());
+        if (userService.findByEmail(authenticationRequest.getEmail()) != null) {
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            boolean passwordexist = passwordEncoder.matches(authenticationRequest.getPassword(), loginUser.getPassword());
+            if (passwordexist) {
+                if (loginUser.getUsertype().equals("Staff")) {
+                    facultyDetails = facultyService.findByEmail(loginUser.getEmail());
+                    if (loginUser.getEmail().equals(facultyDetails.getEmail())) {
+                        facultyDetails.setUserId(loginUser.getId());
+                        facultyRepository.save(facultyDetails);
+                        logger.info("Staff id saved");
+                    }
+                } else if (loginUser.getUsertype().equals("Student")) {
+                    studentDetails = studentService.findByEmail(loginUser.getEmail());
+                    if (loginUser.getEmail().equals(studentDetails.getEmail())) {
+                        logger.info("Student id saved");
+                        studentDetails.setUserId(loginUser.getId());
+                        studentRepository.save(studentDetails);
+                    }
                 }
-            } else if (loginUser.getUsertype().equals("Student")) {
-                studentDetails = studentService.findByEmail(loginUser.getEmail());
-                if (loginUser.getEmail().equals(studentDetails.getEmail())) {
-                    logger.info("Student id saved");
-                    studentDetails.setUserId(loginUser.getId());
-                    studentRepository.save(studentDetails);
-                }
+                final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
+                final String jwt = jwtTokenUtil.generateToken(userDetails);
+                return ResponseEntity.ok(new AuthenticationResponse(jwt, userService.findByEmail(authenticationRequest.getEmail())));
+            } else {
+                return ResponseEntity.ok("Incorrect Password");
             }
-            final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-            final String jwt = jwtTokenUtil.generateToken(userDetails);
-            return ResponseEntity.ok(new AuthenticationResponse(jwt, userService.findByEmail(authenticationRequest.getEmail())));
-        }
-        else
-        {
-            return ResponseEntity.ok("Incorrect Password");
+        } else {
+            logger.error("User not present");
+            return null;
         }
     }
-    else {
-        logger.error("User not present");
-        return null;
-    }
-}
 
 
     @GetMapping("/allUsers")
-    public List<UserModel> getAllUsers()
-    {
+    public List<UserModel> getAllUsers() {
 
         return userRepository.findAll();
     }
+
     @GetMapping("/getAdmin/{id}")
-    public Optional<UserModel> getAdmin(@PathVariable Long id)
-    {
+    public Optional<UserModel> getAdmin(@PathVariable Long id) {
         return userService.findById(id);
     }
 }

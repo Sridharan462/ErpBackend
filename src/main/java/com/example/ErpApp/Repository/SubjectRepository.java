@@ -13,8 +13,9 @@ import java.util.Set;
 
 @Repository
 public interface SubjectRepository extends JpaRepository<Subjects,Long> {
-    public Boolean existsByRegister(String register);
-    public Boolean existsBySubjectname(String sname);
+    public Subjects findByRegister(String register);
+    public List<Subjects> findAllBySubjectName(String subject);
+    public Boolean existsBySubjectName(String sname);
 
     String rawQuery="select * from Subject where sem = :id";
     @Query(nativeQuery = true,value = rawQuery)
@@ -24,10 +25,10 @@ public interface SubjectRepository extends JpaRepository<Subjects,Long> {
     @Query(nativeQuery = true,value = Query1)
     public  List<Subjects> getMark(@Param("sem") int sem, @Param("Register") String register);
 
-    String Query2="update Subject set mark = :mark where subjectname = :subjectname and register = :Register";
+    String Query2="update Subject set mark = :mark where subjectName = :subjectName and register = :Register";
     @Modifying
     @Transactional
     @Query(nativeQuery = true,value = Query2)
-    public void updateMark(@Param("mark") int mark, @Param("subjectname") String subjectname,@Param("Register") String Register);
+    public void updateMark(@Param("mark") int mark, @Param("subjectName") String subjectName,@Param("Register") String Register);
 
 }

@@ -13,17 +13,31 @@ public class Subjects {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private int sem;
-    private String subjectname;
-    private String subjectcode;
+    private String subjectName;
+    private String subjectCode;
     private int mark;
     private String register;
     private int count;
+    private boolean markAdded;
 
     public Subjects(Subjects subjects) {
         this.id=subjects.getId();
         this.sem=subjects.getSem();
-        this.subjectname=subjects.getSubjectname();
-        this.subjectcode=subjects.getSubjectcode();
+        this.subjectName=subjects.getSubjectName();
+        this.subjectCode=subjects.getSubjectCode();
         this.count=subjects.getCount();
+    }
+
+    @Override
+    public String toString() {
+        return "Subjects{" +
+                "sem=" + sem +
+                ", subjectName='" + subjectName + '\'' +
+                ", subjectCode='" + subjectCode + '\'' +
+                ", mark=" + mark +
+                ", register='" + register + '\'' +
+                ", count=" + count +
+                ", markAdded=" + markAdded +
+                '}';
     }
 }
