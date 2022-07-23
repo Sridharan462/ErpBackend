@@ -10,6 +10,11 @@ public class AuthenticationResponse {
         this.user = user;
     }
 
+    public AuthenticationResponse(String jwt) {
+        this.jwt = jwt;
+
+    }
+
     public UserModel getUser() {
         return user;
     }
@@ -20,10 +25,5 @@ public class AuthenticationResponse {
 
     public String getJwt() {
         return jwt;
-    }
-
-    public AuthenticationResponse(String jwt) {
-        this.jwt = jwt;
-
     }
 }
