@@ -7,7 +7,9 @@ import java.util.Collection;
 
 public interface UserDetails extends Serializable {
     Collection<? extends GrantedAuthority> getAuthorities();
+
     String getPassword();
+
     String getEmail();
 
     boolean isAccountNonExpired();
