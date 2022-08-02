@@ -53,19 +53,3 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(myUserDetailsService);
     }
 }
-
-
-//        CorsConfiguration corsConfiguration = new CorsConfiguration();
-//        corsConfiguration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-//        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
-//        corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PUT","OPTIONS","PATCH", "DELETE"));
-//        corsConfiguration.setAllowCredentials(true);
-//        corsConfiguration.setExposedHeaders(List.of("Authorization"));
-//                http.csrf().disable().authorizeRequests().antMatchers("/login","/Register")
-//                        .permitAll().anyRequest().authenticated()
-//                        .and().exceptionHandling().and().sessionManagement()
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                        .and().cors().configurationSource(request -> corsConfiguration)
-//                        .and().sessionManagement()
-//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-//                        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);

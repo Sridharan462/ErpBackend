@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,31 +16,30 @@ public class UserService {
     public PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
-//    @Override
-//    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-//        UserModel user = userRepository.findByEmail(email);
-//        if (user == null) {
-//            throw new UsernameNotFoundException("User not found with username: " + email);
-//        }
-//        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(),
-//                new ArrayList<>());
-//
-//    }
 
+    public Boolean existsByEmail(String email) {
+        Boolean user = userRepository.existsByEmail(email);
+        return user;
+    }
     public UserModel findByEmail(String email) {
         UserModel user = userRepository.findByEmail(email);
         return user;
     }
 
-    public void saveUser(UserModel user) {
+    public String saveUser(UserModel user) {
 
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         userRepository.save(user);
+        return "Saved in Database";
     }
 
     public Optional<UserModel> findById(long id) {
         return userRepository.findById(id);
+    }
+
+    public List<UserModel> findAllUsers() {
+        return userRepository.findAll();
     }
 }

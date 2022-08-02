@@ -23,8 +23,12 @@ public class FacultyController {
 
     @PostMapping("/addFaculty")
     public String addFaculty(@RequestBody FacultyDetails facultyDetails) {
-        facultyRepository.save(facultyDetails);
-        return "faculty saved";
+        if(!facultyService.existsByEmail(facultyDetails.getEmail())) {
+            facultyService.saveUser(facultyDetails);
+            return "Added";
+        }
+        else
+            return "Already found";
     }
 
     @GetMapping("/getFaculty/{id}")
@@ -35,7 +39,7 @@ public class FacultyController {
 
     @GetMapping("/getAllFaculty")
     public List<FacultyDetails> allFaculty() {
-        return facultyRepository.findAll();
+        return facultyService.findAll();
     }
 
     @GetMapping("/particularStaff/{id}")
@@ -45,14 +49,13 @@ public class FacultyController {
 
     @DeleteMapping("/deleteFaculty/{id}")
     public String delete(@PathVariable Long id) {
-        FacultyDetails delete = facultyService.findById(id);
-        facultyRepository.delete(delete);
+         facultyService.deleteById(id);
         return "deleted";
     }
 
     @PutMapping("/editFaculty/{id}")
     public ResponseEntity<FacultyDetails> updateService(@PathVariable Long id, @RequestBody FacultyDetails facultyDetails) {
-        FacultyDetails facultyDetails1 = facultyService.findById(id);
+        FacultyDetails facultyDetails1 = facultyService.findById(id).get();
         facultyDetails1.setEmail(facultyDetails.getEmail());
         facultyDetails1.setName(facultyDetails.getName());
         facultyDetails1.setRegister(facultyDetails.getRegister());
@@ -60,7 +63,7 @@ public class FacultyController {
         facultyDetails1.setDob(facultyDetails.getDob());
         facultyDetails1.setDoj(facultyDetails.getDoj());
         facultyDetails1.setNumber(facultyDetails.getNumber());
-        FacultyDetails updatedServices = facultyRepository.save(facultyDetails1);
+        FacultyDetails updatedServices = facultyService.saveUser(facultyDetails1);
         return ResponseEntity.ok(updatedServices);
 
     }

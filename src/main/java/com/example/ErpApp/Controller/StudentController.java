@@ -23,36 +23,40 @@ public class StudentController {
 
     @PostMapping("/addStudent")
     public String addStudent(@RequestBody StudentDetails studentDetails) {
-        studentRepository.save(studentDetails);
-        return "student saved";
+        if(!studentService.existsByEmail(studentDetails.getEmail())) {
+            studentService.saveStudent(studentDetails);
+            return "Added";
+        }
+        else
+            return "Already found";
     }
 
     @GetMapping("/getStudent/{id}")
-    public StudentDetails getStudent(@PathVariable Long id) {
+    public Optional<StudentDetails> getStudent(@PathVariable Long id) {
         return studentService.findByuserId(id);
     }
 
     @GetMapping("/getAllStudent")
     public List<StudentDetails> getAllStudent() {
-        return studentRepository.findAll();
+        return studentService.findAll();
     }
 
     @GetMapping("/particularStudent/{id}")
     public Optional<StudentDetails> particularStudent(@PathVariable Long id) {
         logger.info("User present");
-        return studentRepository.findById(id);
+        return studentService.findById(id);
     }
 
     @DeleteMapping("/deleteStudent/{id}")
     public String delete(@PathVariable Long id) {
-        StudentDetails delete = studentService.findById(id);
-        studentRepository.delete(delete);
+        StudentDetails delete = studentService.findById(id).get();
+        studentService.deleteById(delete);
         return "deleted";
     }
 
     @PutMapping("/editStudent/{id}")
     public ResponseEntity<StudentDetails> updateService(@PathVariable Long id, @RequestBody StudentDetails studentDetails) {
-        StudentDetails studentDetails1 = studentService.findById(id);
+        StudentDetails studentDetails1 = studentService.findById(id).get();
         studentDetails1.setEmail(studentDetails.getEmail());
         studentDetails1.setName(studentDetails.getName());
         studentDetails1.setReg(studentDetails.getReg());
@@ -76,7 +80,7 @@ public class StudentController {
         studentDetails1.setMname(studentDetails.getMname());
         studentDetails1.setMnum(studentDetails.getMnum());
         studentDetails1.setLang(studentDetails.getLang());
-        StudentDetails updatedServices = studentRepository.save(studentDetails1);
+        StudentDetails updatedServices = studentService.saveStudent(studentDetails1);
         return ResponseEntity.ok(updatedServices);
 
     }

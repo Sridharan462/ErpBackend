@@ -1,5 +1,6 @@
 package com.example.ErpApp.Model;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,6 +32,17 @@ public class Subjects {
         this.count = subjects.getCount();
     }
 
+    public Subjects(long id, int sem, String subjectName, String subjectCode, int mark, String register, int count, boolean markAdded) {
+        this.id = id;
+        this.sem = sem;
+        this.subjectName = subjectName;
+        this.subjectCode = subjectCode;
+        this.mark = mark;
+        this.register = register;
+        this.count = count;
+        this.markAdded = markAdded;
+    }
+
     @Override
     public String toString() {
         return "Subjects{" +
@@ -42,5 +54,9 @@ public class Subjects {
                 ", count=" + count +
                 ", markAdded=" + markAdded +
                 '}';
+    }
+    @Builder(builderMethodName = "builder")
+    public static Subjects newUser(long id, int sem, String subjectName, String subjectCode, int mark, String register, int count, boolean markAdded) {
+        return new Subjects(id,sem,subjectName,subjectCode,mark,register,count,markAdded);
     }
 }

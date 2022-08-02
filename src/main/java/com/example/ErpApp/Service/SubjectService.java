@@ -19,21 +19,30 @@ public class SubjectService {
         return subjects;
     }
 
-    public Boolean findByRegister(String register) {
-        Subjects subjects = subjectRepository.findByRegister(register);
-        return subjects != null && !subjects.isMarkAdded();
+    public Boolean findByRegisterAndSubjectName(String register,String subjectName) {
+        Subjects subjects = subjectRepository.findByRegisterAndSubjectName(register,subjectName);
+        System.out.println(subjects + " sub");
+        return subjects != null && subjects.isMarkAdded();
     }
 
     public List<Subjects> findAllData(String sub) {
         return subjectRepository.findAllBySubjectName(sub);
     }
-//    public Subjects findByRegister(String register)
-//    {
-//        Subjects sub= subjectRepository.findByRegister(register);
-//        return sub;
-//    }
-//    public Subjects existsBySubjectname(String sname)
-//    {
-//        return subjectRepository.existsBySubjectname(sname);
-//    }
+
+    public Subjects saveSubject(Subjects subject) {
+        return subjectRepository.save(subject);
+    }
+
+    public List<String> findBySem(int id) {
+        return subjectRepository.findBySem(id);
+    }
+
+    public Subjects saveMarks(Subjects marksFromRequest) {
+        return subjectRepository.save(marksFromRequest);
+    }
+
+    public List<Subjects> getMark(int sem, String register) {
+        return subjectRepository.getMark(sem,register);
+
+    }
 }

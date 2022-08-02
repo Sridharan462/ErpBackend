@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -28,38 +29,39 @@ public class SubjectController {
 
     @PostMapping("/addSubject")
     public String addSubject(@RequestBody Subjects subjects) {
-
         MarksModel marksModel = new MarksModel();
-        for (int i = 1; i <= subjects.getCount(); i++) {
+        for (int subjectCount = 1; subjectCount <= subjects.getCount(); subjectCount++) {
             Subjects s = new Subjects(subjects);
             s.setMarkAdded(false);
-            subjectRepository.save(s);
+             subjectService.saveSubject(s);
             System.out.println(subjects);
         }
-        MarksModel marksFromDB = marksRepository.findBySubject(subjects.getSubjectName());
+        MarksModel marksFromDB = marksService.findSubjectCountBySubjectName(subjects.getSubjectName()).get();
         if (marksFromDB != null) {
             marksFromDB.setCount(subjects.getCount() + marksFromDB.getCount());
-            marksRepository.save(marksFromDB);
+            marksService.saveMark(marksFromDB);
         } else {
             marksModel.setSubject(subjects.getSubjectName());
             marksModel.setCount(subjects.getCount());
-            marksRepository.save(marksModel);
+            marksService.saveMark(marksModel);
         }
-        return "subject added";
+        return "subject add";
     }
 
     @GetMapping("/getSubject/{id}")
-    public List<Subjects> getSubject(@PathVariable int id) {
-        return subjectRepository.findBySem(id);
+    public List<String> getSubject(@PathVariable int id) {
+        return  subjectService.findBySem(id);
     }
 
     @PostMapping("/addMark")
     public String addMark(@RequestBody Subjects subjects) {
-        MarksModel model = marksService.findSubjectCountBySubjectName(subjects.getSubjectName());
+        MarksModel model = marksService.findSubjectCountBySubjectName(subjects.getSubjectName()).get();
+        System.out.println(model);
+        System.out.println(subjects);
         if (!studentService.findRegIfExists(subjects.getRegister())) {
             System.out.println("#error");
             return "Add a valid register number";
-        } else if (!subjectService.findByRegister(subjects.getRegister()) && model.getCount() >= 0) {
+        } else if (!subjectService.findByRegisterAndSubjectName(subjects.getRegister(),subjects.getSubjectName()) && model.getCount() >= 0) {
             Subjects marksFromRequest = new Subjects();
             List<Subjects> marksFromRequestList = subjectService.findAllData(subjects.getSubjectName());
             boolean flagForMarkAddedCheck = true;
@@ -70,23 +72,24 @@ public class SubjectController {
                     break;
                 } else flagForMarkAddedCheck = false;
             }
-            if (!flagForMarkAddedCheck)
-                return "Un-applicable to add mark";
-            marksFromRequest.setCount(marksFromRequest.getCount() - 1);
+            if (!flagForMarkAddedCheck){
+                return "Un-applicable to add mark";}
+//            marksFromRequest.setCount(marksFromRequest.getCount() - 1);
             marksFromRequest.setMarkAdded(true);
             marksFromRequest.setRegister(subjects.getRegister());
             marksFromRequest.setMark(subjects.getMark());
-            subjectRepository.save(marksFromRequest);
+            subjectService.saveMarks(marksFromRequest);
             model.setCount(model.getCount() - 1);
-            marksRepository.save(model);
+            marksService.saveMark(model);
             return marksFromRequest.toString();
         } else {
-            return "Marks were added for all the students";
+            return "Marks were already added for  the student";
         }
     }
 
     @PostMapping("/getMark")
     public List<Subjects> getMark(@RequestBody Subjects subjects) {
-        return subjectRepository.getMark(subjects.getSem(), subjects.getRegister());
+        return subjectService.getMark(subjects.getSem(), subjects.getRegister());
     }
 }
+

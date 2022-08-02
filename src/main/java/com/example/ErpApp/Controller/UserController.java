@@ -12,6 +12,7 @@ import com.example.ErpApp.Service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -50,59 +52,84 @@ public class UserController {
     @Autowired
     private StudentService studentService;
 
+    public UserController() {
+        super();
+    }
+
+    public UserController(UserRepository userRepository) {
+        super();
+        this.userRepository = userRepository;
+    }
+
     @PostMapping("/Register")
-    public String addUser(@RequestBody @Valid UserModel user) throws UsernameNotFoundException {
-        if (userService.findByEmail(user.getEmail()) == null) {
+    public ResponseEntity<?> addUser(@RequestBody @Valid UserModel user)  {
+
+        if (!userService.existsByEmail(user.getEmail()))  {
             userService.saveUser(user);
-            return "new user";
+            return ResponseEntity.ok("new user");
         } else
-            throw new UsernameNotFoundException("User already found in database" + user);
+            return ResponseEntity.ok("User already Exists");
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest) throws RuntimeException {
         loginUser = userService.findByEmail(authenticationRequest.getEmail());
-        if (userService.findByEmail(authenticationRequest.getEmail()) != null) {
-            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-            boolean passwordexist = passwordEncoder.matches(authenticationRequest.getPassword(), loginUser.getPassword());
-            if (passwordexist) {
-                if (loginUser.getUsertype().equals("Staff")) {
-                    facultyDetails = facultyService.findByEmail(loginUser.getEmail());
-                    if (loginUser.getEmail().equals(facultyDetails.getEmail())) {
-                        facultyDetails.setUserId(loginUser.getId());
-                        facultyRepository.save(facultyDetails);
-                        logger.info("Staff id saved");
+            if (userService.existsByEmail(authenticationRequest.getEmail())) {
+                BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+                boolean passwordexist = passwordEncoder.matches(authenticationRequest.getPassword(), loginUser.getPassword());
+                if (passwordexist) {
+                    if (loginUser.getUsertype().equals("Staff")) {
+                        facultyDetails = facultyService.findByEmail(loginUser.getEmail());
+//                        String email= loginUser.getEmail();
+//                        String facultyEmail=facultyDetails.getEmail();
+                       try {
+                            if (loginUser.getEmail().equals(facultyDetails.getEmail())) {
+                                facultyDetails.setUserId(loginUser.getId());
+                                facultyRepository.save(facultyDetails);
+                                logger.info("Staff id saved");
+                            }
+                        }
+                           catch (Exception e) {
+                                logger.error("Your register number is not in database");
+                                throw new NoSuchElementException(" Element " + e );
+                            }
+                    } else if (loginUser.getUsertype().equals("Student")) {
+                        studentDetails = studentService.findByEmail(loginUser.getEmail());
+                        try {
+                            if (loginUser.getEmail().equals(studentDetails.getEmail())) {
+                                logger.info("Student id saved");
+                                studentDetails.setUserId(loginUser.getId());
+                                studentRepository.save(studentDetails);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            logger.error("Your register id is not present in database");
+                            throw new NoSuchElementException(" Element " + e);
+                        }
                     }
-                } else if (loginUser.getUsertype().equals("Student")) {
-                    studentDetails = studentService.findByEmail(loginUser.getEmail());
-                    if (loginUser.getEmail().equals(studentDetails.getEmail())) {
-                        logger.info("Student id saved");
-                        studentDetails.setUserId(loginUser.getId());
-                        studentRepository.save(studentDetails);
-                    }
+                    final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
+                    final String jwt = jwtTokenUtil.generateToken(userDetails);
+                    return ResponseEntity.ok(new AuthenticationResponse(jwt, userService.findByEmail(authenticationRequest.getEmail())));
+                } else {
+                    return ResponseEntity.ok("Incorrect Password");
                 }
-                final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
-                final String jwt = jwtTokenUtil.generateToken(userDetails);
-                return ResponseEntity.ok(new AuthenticationResponse(jwt, userService.findByEmail(authenticationRequest.getEmail())));
-            } else {
-                return ResponseEntity.ok("Incorrect Password");
             }
-        } else {
-            logger.error("User not present");
-            return null;
-        }
+            else {
+                throw new UsernameNotFoundException("UserNot Found Exception " + authenticationRequest.getEmail());
+            }
     }
 
 
     @GetMapping("/allUsers")
-    public List<UserModel> getAllUsers() {
-
-        return userRepository.findAll();
+    public ResponseEntity<List<UserModel>> getAllUsers() {
+        return ResponseEntity.ok(userService.findAllUsers());
     }
 
     @GetMapping("/getAdmin/{id}")
-    public Optional<UserModel> getAdmin(@PathVariable Long id) {
+    public Optional<UserModel> getAdmin(@PathVariable Long id) throws RuntimeException {
+
         return userService.findById(id);
     }
 }
